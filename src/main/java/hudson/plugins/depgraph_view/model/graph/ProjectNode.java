@@ -46,7 +46,9 @@ public class ProjectNode {
 
     public ResultTrend getLatestBuildResult() {
         AbstractBuild build = project.getLastBuild();
-        return ResultTrend.getResultTrend(build);
+        if (build != null)
+            return ResultTrend.getResultTrend(build);
+        return ResultTrend.NOT_BUILT;
     }
 
     public AbstractProject<?, ?> getProject() {
