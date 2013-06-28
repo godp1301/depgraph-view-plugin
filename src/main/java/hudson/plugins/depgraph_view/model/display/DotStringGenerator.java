@@ -25,6 +25,8 @@ package hudson.plugins.depgraph_view.model.display;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ListMultimap;
+import hudson.model.Messages;
+import hudson.model.ResultTrend;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
@@ -59,7 +61,7 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
         StringBuilder builder = new StringBuilder();
 
         builder.append("digraph {\n");
-        builder.append("node [shape=box, style=rounded];\n");
+        builder.append("node [shape=box, style=filled];\n");
 
         /**** First define all the objects and clusters ****/
 
@@ -117,9 +119,15 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     }
 
     private String projectToNodeString(ProjectNode proj) {
-        return escapeString(proj.getName()) +
-                " [href=" +
-                getEscapedProjectUrl(proj) + "]";
+        StringBuilder builder = new StringBuilder();
+        builder.append(escapeString(proj.getName()));
+        builder.append(" [ shape=box, ");
+        builder.append(String.format(" fillcolor=%s, ", getBuildColorToDisplay(proj.getLatestBuildResult())));
+        builder.append(" href=");
+        builder.append(getEscapedProjectUrl(proj));
+        builder.append("]");
+
+        return builder.toString();
     }
 
     private String projectToNodeString(ProjectNode proj, List<ProjectNode> subprojects) {
@@ -148,6 +156,26 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     private String dependencyToEdgeString(Edge edge, String... options) {
         return escapeString(edge.source.getName()) + " -> " +
                 escapeString(edge.target.getName()) + " [ color=" + edge.getColor() + " " + Joiner.on(" ").join(options) +" ] ";
+    }
+
+    private String getBuildColorToDisplay(ResultTrend trend) {
+        switch (trend) {
+            case FIXED:
+            case SUCCESS:
+                return "lawngreen";
+            case NOW_UNSTABLE:
+            case STILL_UNSTABLE:
+            case UNSTABLE:
+                return "yellow";
+            case STILL_FAILING:
+            case FAILURE:
+                return "red";
+            case ABORTED:
+            case NOT_BUILT:
+                return "lightgrey";
+            default:
+                return "white";
+        }
     }
 
 }

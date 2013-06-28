@@ -23,7 +23,7 @@
 package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.base.Preconditions;
-import hudson.model.AbstractProject;
+import hudson.model.*;
 
 /**
  * A Node in the DependencyGraph, which corresponds to a Project
@@ -42,6 +42,11 @@ public class ProjectNode {
 
     public String getName() {
         return project.getFullDisplayName();
+    }
+
+    public ResultTrend getLatestBuildResult() {
+        AbstractBuild build = project.getLastBuild();
+        return ResultTrend.getResultTrend(build);
     }
 
     public AbstractProject<?, ?> getProject() {
